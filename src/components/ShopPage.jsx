@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useOutletContext } from "react-router"
+import ProductCard from './ProductCard'
 
 export default function ShopPage() {
+    const { cart, setCart } = useOutletContext();
     const [products, setProducts] = useState([])
     const [loading, setLoading] = useState(true)
 
@@ -16,17 +19,29 @@ export default function ShopPage() {
                 setLoading(false)
             })
     }, [])
+
+    function addToCart(product, qty) {
+        setCart(prev => {
+            const exists = prev.find(item => item.id === product.id)
+
+            if (exists) {
+                return prev.map(item => 
+                    item.id === product.id ? {...item, qty: item.qty + qty} : item
+                )
+            }
+
+            return [...prev, {...product, qty}]
+        })
+    }
+
+    if (loading) return <p>Loading...</p>;
+
     return (
         <>
             <h1>Shop Page</h1>
             <div className="products-container">
                 {products.map(product => (
-                    <div className="product">
-                        <h4>{product.title}</h4>
-                        <img src={product.image} alt={product.id} />
-                        <p>{product.description}</p>
-                        <p>${product.price}</p>
-                    </div>
+                    <ProductCard key={product.id} product={product} addToCart={addToCart}/>
                 ))}
             </div>
         </>
